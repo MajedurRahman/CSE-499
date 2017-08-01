@@ -54,7 +54,10 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String email =emailTv.getText().toString().trim();
                 String pass = passwordTv.getText().toString();
-               checkLogin(email,pass);
+                if (!email.isEmpty()&& !pass.isEmpty()){
+                    checkLogin(email,pass);
+                }
+
             }
         });
 
@@ -84,6 +87,11 @@ public class MainActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
 
                             Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+
+                            startActivity(new Intent(MainActivity.this, MapActivity.class));
+                        }
+                        else {
+                            Toast.makeText(MainActivity.this, "Please enter Correct User Name and Password", Toast.LENGTH_SHORT).show();
                         }
 
 
@@ -100,8 +108,10 @@ public class MainActivity extends AppCompatActivity {
                 if (user != null) {
                     // User is signed in
 
+
                 } else {
                     // User is signed out
+
 
                 }
                 // ...

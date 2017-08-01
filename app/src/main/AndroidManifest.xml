@@ -18,6 +18,13 @@
         </activity>
         <activity android:name=".Activity.RegistrationActivity"></activity>
         <activity android:name=".Activity.ResetPasswordActivity"></activity>
+        <activity android:name=".Activity.MapActivity"></activity>
+
+
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDKk3qlFlAipHQ9Y3YGoGZSL-S67IGssN4"/>
     </application>
 
 </manifest>
