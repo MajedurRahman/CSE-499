@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".Activity.RegistrationActivity"></activity>
+        <activity android:name=".Activity.ResetPasswordActivity"></activity>
     </application>
 
 </manifest>

@@ -19,7 +19,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity {
 
-    TextView registerTv;
+    TextView registerTv , forgotPass;
     EditText emailTv, passwordTv;
     Button loginBtn;
     private FirebaseAuth mAuth;
@@ -55,6 +55,18 @@ public class MainActivity extends AppCompatActivity {
                 String email =emailTv.getText().toString().trim();
                 String pass = passwordTv.getText().toString();
                checkLogin(email,pass);
+            }
+        });
+
+
+        forgotPass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                //forgot pass
+
+                startActivity(new Intent(MainActivity.this,ResetPasswordActivity.class));
             }
         });
 
@@ -105,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
         loginBtn = (Button) findViewById(R.id.loginBtn);
         emailTv = (EditText) findViewById(R.id.emailEt);
         passwordTv = (EditText) findViewById(R.id.passwordEt);
+        forgotPass = (TextView) findViewById(R.id.forgotpassword);
+
 
     }
 
