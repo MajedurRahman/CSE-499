@@ -17,28 +17,26 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class MainActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
-    TextView registerTv , forgotPass;
+    TextView registerTv, forgotPass;
     EditText emailTv, passwordTv;
     Button loginBtn;
     private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
 
-
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
         mAuth = FirebaseAuth.getInstance();
-
 
 
         initComponents();
         onclickAction();
-        userAuth();
+
 
 
     }
@@ -49,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                startActivity(new Intent(MainActivity.this, RegistrationActivity.class));
+                startActivity(new Intent(LoginActivity.this, RegistrationActivity.class));
             }
         });
 
@@ -57,10 +55,10 @@ public class MainActivity extends AppCompatActivity {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String email =emailTv.getText().toString().trim();
+                String email = emailTv.getText().toString().trim();
                 String pass = passwordTv.getText().toString();
-                if (!email.isEmpty()&& !pass.isEmpty()){
-                    checkLogin(email,pass);
+                if (!email.isEmpty() && !pass.isEmpty()) {
+                    checkLogin(email, pass);
                 }
 
             }
@@ -74,29 +72,27 @@ public class MainActivity extends AppCompatActivity {
 
                 //forgot pass
 
-                startActivity(new Intent(MainActivity.this,ResetPasswordActivity.class));
+                startActivity(new Intent(LoginActivity.this, ResetPasswordActivity.class));
             }
         });
 
     }
 
-    private void checkLogin(String email , String password) {
+    private void checkLogin(String email, String password) {
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                         // If sign in fails, display a message to the user. If sign in succeeds
+                        // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (task.isSuccessful()) {
 
-                            Toast.makeText(MainActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-
-                            startActivity(new Intent(MainActivity.this, MapActivity.class));
-                        }
-                        else {
-                            Toast.makeText(MainActivity.this, "Please enter Correct User Name and Password", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Please Verify Your Phone Number First", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(LoginActivity.this, PhoneVerificationActivity.class));
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Please Enter Correct User Name and Password", Toast.LENGTH_SHORT).show();
                         }
 
 
@@ -104,26 +100,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    public void userAuth(){
 
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    // User is signed in
-                    Toast.makeText(MainActivity.this, "Login", Toast.LENGTH_SHORT).show();
-
-                } else {
-                    // User is signed out
-
-
-                }
-                // ...
-            }
-        };
-
-    }
 
     private void initComponents() {
 
@@ -137,16 +114,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
-    }
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
-    }
+
+
 }

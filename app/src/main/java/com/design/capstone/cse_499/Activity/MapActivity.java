@@ -11,6 +11,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.design.capstone.cse_499.R;
@@ -22,6 +24,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * Created by Majedur Rahman on 8/1/2017.
@@ -38,11 +41,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     //Google ApiClient
     private GoogleApiClient googleApiClient;
+    Switch onlineOfline;
+
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+
+        initComponent();
+        onClickAction();
+
+
+        mAuth = FirebaseAuth.getInstance();
+        if(mAuth!=null){
+            Toast.makeText(this, "You are Logged in with "+mAuth.getCurrentUser().getPhoneNumber(), Toast.LENGTH_SHORT).show();
+        }
 
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -58,6 +73,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 
+    }
+
+    private void onClickAction() {
+
+        onlineOfline.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+
+                if (isChecked== false){
+                    mAuth.signOut();
+                    finish();
+                }
+
+            }
+        });
+    }
+
+    private void initComponent() {
+
+        onlineOfline = (Switch) findViewById(R.id.onlineOfflineSwitch);
     }
 
 

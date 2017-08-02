@@ -3,7 +3,7 @@
     package="com.design.capstone.cse_499">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -12,22 +12,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.MainActivity">
+        <activity android:name=".Activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.RegistrationActivity"></activity>
-        <activity android:name=".Activity.ResetPasswordActivity"></activity>
-        <activity android:name=".Activity.MapActivity"></activity>
-
-
+        <activity android:name=".Activity.RegistrationActivity" />
+        <activity android:name=".Activity.ResetPasswordActivity" />
+        <activity android:name=".Activity.MapActivity" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDKk3qlFlAipHQ9Y3YGoGZSL-S67IGssN4"/>
+            android:value="AIzaSyDKk3qlFlAipHQ9Y3YGoGZSL-S67IGssN4" />
+
+        <activity android:name=".Activity.PhoneVerificationActivity"></activity>
     </application>
 
 </manifest>

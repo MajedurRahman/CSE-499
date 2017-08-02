@@ -10,5 +10,15 @@
         tools:context=".MapsActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:padding="8dp"
+        android:checked="true"
+        android:id="@+id/onlineOfflineSwitch"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="20dp" />
 
 </RelativeLayout>
