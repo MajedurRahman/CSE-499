@@ -23,7 +23,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
@@ -101,7 +104,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         // Log.d("Detection", "on map ready");
         mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+        mMap.getUiSettings().setIndoorLevelPickerEnabled(false);
+        mMap.getUiSettings().setTiltGesturesEnabled(false);
+
         //Moving the camera
         mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latitude , longitude)));
         //Animating the camera
@@ -113,6 +121,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             return;
         }
 
+      //  addMarkerOnMap(latitude , longitude);
+
+
+    }
+    public void addMarkerOnMap(double latitude , double longitude){
+        MarkerOptions markerOption = new MarkerOptions()
+                .position(new LatLng(latitude,longitude))//setting position
+                .title("Your Position")
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.marker4));
+
+        mMap.addMarker(markerOption);
 
     }
 
@@ -214,6 +233,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
         }
+        addMarkerOnMap(latitude,longitude);
 
 
     }
