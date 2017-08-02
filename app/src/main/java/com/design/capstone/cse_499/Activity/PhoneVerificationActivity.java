@@ -6,6 +6,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,6 +24,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class PhoneVerificationActivity extends AppCompatActivity  {
@@ -58,12 +60,12 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
         mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
             public void onVerificationCompleted(PhoneAuthCredential credential) {
-
                 signInWithPhoneAuthCredential(credential);
             }
 
             @Override
             public void onVerificationFailed(FirebaseException e) {
+
                 if (e instanceof FirebaseAuthInvalidCredentialsException) {
                     phoneNumberEt.setError("Invalid phone number.");
                 } else if (e instanceof FirebaseTooManyRequestsException) {
@@ -77,11 +79,9 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
                                    PhoneAuthProvider.ForceResendingToken token) {
                 mVerificationId = verificationId;
                 mResendToken = token;
-               String s = mResendToken.toString();
             }
         };
-    }
-    private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
+    }  private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -114,6 +114,16 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
         signInWithPhoneAuthCredential(credential);
     }
 
+    private void resendVerificationCode(String phoneNumber,
+                                        PhoneAuthProvider.ForceResendingToken token) {
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                phoneNumber,        // Phone number to verify
+                60,                 // Timeout duration
+                TimeUnit.SECONDS,   // Unit of timeout
+                this,               // Activity (for callback binding)
+                mCallbacks,         // OnVerificationStateChangedCallbacks
+                token);             // ForceResendingToken from callbacks
+    }
 
     private boolean validatePhoneNumber() {
         String phoneNumber = phoneNumberEt.getText().toString();
@@ -123,7 +133,7 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
         }
         return true;
     }
-    @Override
+   /* @Override
     public void onStart() {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -131,7 +141,7 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
             startActivity(new Intent(PhoneVerificationActivity.this, MapActivity.class));
             finish();
         }
-    }
+    }*/
 
 
     private void initOnClickAction() {
@@ -144,7 +154,9 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
                 if (!validatePhoneNumber()) {
                     return;
                 }
-                startPhoneNumberVerification(phoneNumberEt.getText().toString());
+
+                String phoneNumber = phoneNumberEt.getText().toString();
+                startPhoneNumberVerification("+88"+phoneNumber);
 
             }
         });

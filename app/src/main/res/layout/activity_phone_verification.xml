@@ -10,6 +10,7 @@
         android:id="@+id/phoneNumberforver"
         android:layout_width="match_parent"
         android:layout_height="50dp"
+
         android:layout_above="@+id/verifyBtn"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -39,6 +40,7 @@
         android:layout_height="50dp"
         android:layout_marginLeft="60dp"
         android:layout_marginTop="10dp"
+        android:inputType="number"
         android:layout_marginBottom="10dp"
         android:layout_marginRight="60dp"
         android:hint="Verification Code"
