@@ -42,6 +42,8 @@ public class RegistrationActivity extends AppCompatActivity {
         initComponent();
         onClickAction();
 
+        mAuth.signOut();
+
 
     }
 

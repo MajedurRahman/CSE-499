@@ -28,8 +28,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+
         setContentView(R.layout.activity_main);
         mAuth = FirebaseAuth.getInstance();
+
+
 
         initComponents();
         onclickAction();
@@ -107,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
-
+                    Toast.makeText(MainActivity.this, "Login", Toast.LENGTH_SHORT).show();
 
                 } else {
                     // User is signed out
