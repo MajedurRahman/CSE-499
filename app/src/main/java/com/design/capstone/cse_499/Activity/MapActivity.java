@@ -23,11 +23,12 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * Created by Majedur Rahman on 8/1/2017.
@@ -41,11 +42,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     LocationManager locationManager;
     double longitude;
     double latitude;
+    Switch signout, onlineofflineSwitch;
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference userOnlineRef = database.getReference("isOnline");
     private GoogleMap mMap;
     //Google ApiClient
     private GoogleApiClient googleApiClient;
-    Switch onlineOfline;
-
     private FirebaseAuth mAuth;
 
     @Override
@@ -58,8 +60,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
         mAuth = FirebaseAuth.getInstance();
-        if(mAuth!=null){
-            Toast.makeText(this, "You are Logged in with "+mAuth.getCurrentUser().getPhoneNumber(), Toast.LENGTH_SHORT).show();
+        if (mAuth != null) {
+            Toast.makeText(this, "You are Logged in with " + mAuth.getCurrentUser().getPhoneNumber(), Toast.LENGTH_SHORT).show();
         }
 
 
@@ -80,26 +82,45 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void onClickAction() {
 
-        onlineOfline.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        signout.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
 
-                if (isChecked== false){
+                if (isChecked == false) {
                     mAuth.signOut();
                     finish();
                 }
 
             }
         });
+
+
+        onlineofflineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+
+                    userOnlineRef.child(mAuth.getCurrentUser().getUid().toString()).setValue(true);
+                    onlineofflineSwitch.setText("Online");
+                }
+
+                else {
+                    userOnlineRef.child(mAuth.getCurrentUser().getUid().toString()).removeValue();
+                    onlineofflineSwitch.setText("Offline");
+
+                }
+            }
+        });
     }
 
     private void initComponent() {
 
-        onlineOfline = (Switch) findViewById(R.id.onlineOfflineSwitch);
+        signout = (Switch) findViewById(R.id.signOutSwitch);
+        onlineofflineSwitch = (Switch) findViewById(R.id.onlineOfflineSwitch);
     }
 
 
-    //When MAp is ready. This method is called 1st after oncreate
+    //When Map is ready. This method is called 1st after oncreate
     @Override
     public void onMapReady(GoogleMap googleMap) {
         // Log.d("Detection", "on map ready");
@@ -111,7 +132,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap.getUiSettings().setTiltGesturesEnabled(false);
 
         //Moving the camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latitude , longitude)));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(latitude, longitude)));
         //Animating the camera
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 
@@ -121,14 +142,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             return;
         }
 
-      //  addMarkerOnMap(latitude , longitude);
+        //  addMarkerOnMap(latitude , longitude);
 
 
     }
-    public void addMarkerOnMap(double latitude , double longitude){
+
+    public void addMarkerOnMap(double latitude, double longitude) {
         MarkerOptions markerOption = new MarkerOptions()
-                .position(new LatLng(latitude,longitude))//setting position
-                .title("Your Position")
+                .position(new LatLng(latitude, longitude))//setting position
+                .title("My Position")
                 .icon(BitmapDescriptorFactory.fromResource(R.mipmap.marker4));
 
         mMap.addMarker(markerOption);
@@ -233,7 +255,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
         }
-        addMarkerOnMap(latitude,longitude);
+        addMarkerOnMap(latitude, longitude);
 
 
     }
