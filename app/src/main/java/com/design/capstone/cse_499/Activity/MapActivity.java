@@ -46,6 +46,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference userOnlineRef = database.getReference("isOnline");
     private GoogleMap mMap;
+
+    String userID;
     //Google ApiClient
     private GoogleApiClient googleApiClient;
     private FirebaseAuth mAuth;
@@ -60,9 +62,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
         mAuth = FirebaseAuth.getInstance();
-        if (mAuth != null) {
-            Toast.makeText(this, "You are Logged in with " + mAuth.getCurrentUser().getPhoneNumber(), Toast.LENGTH_SHORT).show();
-        }
 
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -76,6 +75,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .addApi(LocationServices.API)
                 .build();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+
+        userID = mAuth.getCurrentUser().getUid().toString();
 
 
     }
@@ -100,12 +102,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
 
-                    userOnlineRef.child(mAuth.getCurrentUser().getUid().toString()).setValue(true);
+                    userOnlineRef.child(userID).setValue(true);
                     onlineofflineSwitch.setText("Online");
                 }
 
                 else {
-                    userOnlineRef.child(mAuth.getCurrentUser().getUid().toString()).removeValue();
+                    userOnlineRef.child(userID).removeValue();
                     onlineofflineSwitch.setText("Offline");
 
                 }
