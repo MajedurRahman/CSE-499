@@ -1,10 +1,14 @@
 package com.design.capstone.cse_499.Model;
 
+import android.os.Parcelable;
+
+import java.io.Serializable;
+
 /**
  * Created by Majedur Rahman on 8/1/2017.
  */
 
-public class User {
+public class User implements Serializable{
 
     private String fullName;
     private String userName;

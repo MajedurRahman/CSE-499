@@ -1,7 +1,10 @@
 package com.design.capstone.cse_499.Activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -13,11 +16,14 @@ import com.design.capstone.cse_499.Model.User;
 import com.design.capstone.cse_499.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.vision.barcode.Barcode;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.io.Serializable;
 
 public class RegistrationActivity extends AppCompatActivity {
 
@@ -42,7 +48,10 @@ public class RegistrationActivity extends AppCompatActivity {
         initComponent();
         onClickAction();
 
-        mAuth.signOut();
+       if (mAuth!=null)
+       {
+           mAuth.signOut();
+       }
 
 
     }
@@ -83,10 +92,32 @@ public class RegistrationActivity extends AppCompatActivity {
         user.setPassword(password);
         user.setPhoneNumber(phonenumber);
 
-        createUserAuth(user.getEmail(), user.getPassword());
+      //  createUserAuth(user.getEmail(), user.getPassword());
+        createUserAuth(user.getEmail(),user.getPassword());
+        //gotoPhoneVerificationActivity();
+
+
+
 
 
     }
+
+    private void gotoPhoneVerificationActivity() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(RegistrationActivity.this, " Verify Your Phone Number ", Toast.LENGTH_SHORT).show();
+                final Intent mainIntent = new Intent(RegistrationActivity.this, PhoneVerificationActivity.class);
+                mainIntent.putExtra("user" ,  user);
+                startActivity(mainIntent);
+                finish();
+            }
+        }, 1000);
+
+
+    }
+
+
 
     public void createUserAuth(String email, String pass) {
 
@@ -104,9 +135,9 @@ public class RegistrationActivity extends AppCompatActivity {
                             Toast.makeText(RegistrationActivity.this, " Registration Successful..", Toast.LENGTH_SHORT).show();
                             FirebaseUser currentUser = mAuth.getCurrentUser();
                             if (currentUser != null) {
-                                SendDatatoFireBase(user, mAuth.getCurrentUser().getUid().toString());
                                 mAuth.signOut();
-                                finish();
+
+                                gotoPhoneVerificationActivity();
                             }
                         }
 
@@ -151,7 +182,7 @@ public class RegistrationActivity extends AppCompatActivity {
         }
         if (!email.isEmpty() && !phonenumber.isEmpty() && !password.isEmpty() && !username.isEmpty() && !fullname.isEmpty()) {
 
-            if (email.contains("@") && email.contains(".")) {
+            if (email.contains("@") && email.contains(".") && !email.trim().contains(" ")&& !email.contains("@.") && !email.contains(".@")) {
 
                 if (phonenumber.length() == 11) {
 

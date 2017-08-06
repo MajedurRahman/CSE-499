@@ -6,12 +6,15 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
 
+
+import com.design.capstone.cse_499.Model.User;
 import com.design.capstone.cse_499.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -24,7 +27,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
-import java.util.Map;
+
 import java.util.concurrent.TimeUnit;
 
 public class PhoneVerificationActivity extends AppCompatActivity  {
@@ -35,6 +38,8 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
     private FirebaseAuth mAuth;
     private PhoneAuthProvider.ForceResendingToken mResendToken;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
+
+    User user;
     String mVerificationId;
 
     private static final String TAG = "PhoneVerificationActivity";
@@ -49,6 +54,48 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
         initFireBaseSMSverification();
 
         initOnClickAction();
+
+        Intent in = getIntent();
+        user = new User();
+
+        if (in==null){
+            phoneNumberEt.setText("Enter Your Number Here");
+            phoneNumberEt.setEnabled(true);
+            Log.e("errorr , " , " intent null");
+
+        }
+        else {
+
+            if (in.getSerializableExtra("user")!=null){
+
+                user = (User)in.getSerializableExtra("user");
+            }
+            else {
+
+                user.setPhoneNumber("NoData");
+                phoneNumberEt.setHint("Enter Your Number Here");
+                phoneNumberEt.setEnabled(true);
+                Log.e("errorr , " , " intent null");
+            }
+            Log.e("errorr , " , " intent  else ");
+
+        }
+
+
+
+        if (user.getPhoneNumber().toString().equals("NoData")){
+
+
+            phoneNumberEt.setHint("Enter Your Number Here");
+            phoneNumberEt.setEnabled(true);
+
+        }
+        else {
+
+            phoneNumberEt.setText(user.getPhoneNumber());
+            phoneNumberEt.setEnabled(false);
+        }
+
     }
 
 

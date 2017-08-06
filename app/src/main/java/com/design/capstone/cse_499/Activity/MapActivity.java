@@ -222,7 +222,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onStop();
 
 
+
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        userOnlineRef.child(userID).removeValue();
+        onlineofflineSwitch.setText("Offline");
+
+    }
+
 
     //Getting current location
     private void getCurrentLocation() {
