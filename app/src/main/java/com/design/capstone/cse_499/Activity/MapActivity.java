@@ -45,9 +45,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     Switch signout, onlineofflineSwitch;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference userOnlineRef = database.getReference("isOnline");
-    private GoogleMap mMap;
-
+    DatabaseReference userBusyRef = database.getReference("isBusy");
     String userID;
+    private GoogleMap mMap;
     //Google ApiClient
     private GoogleApiClient googleApiClient;
     private FirebaseAuth mAuth;
@@ -104,9 +104,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     userOnlineRef.child(userID).setValue(true);
                     onlineofflineSwitch.setText("Online");
-                }
-
-                else {
+                } else {
                     userOnlineRef.child(userID).removeValue();
                     onlineofflineSwitch.setText("Offline");
 
