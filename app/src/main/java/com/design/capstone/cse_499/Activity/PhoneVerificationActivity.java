@@ -26,6 +26,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 
 import java.util.concurrent.TimeUnit;
@@ -41,6 +43,11 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
 
     User user;
     String mVerificationId;
+
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference userOnlineRef = database.getReference("isOnline");
+    DatabaseReference userBusyRef = database.getReference("isBusy");
+    DatabaseReference userRef = database.getReference("UserData");
 
     private static final String TAG = "PhoneVerificationActivity";
 
@@ -84,8 +91,6 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
 
 
         if (user.getPhoneNumber().toString().equals("NoData")){
-
-
             phoneNumberEt.setHint("Enter Your Number Here");
             phoneNumberEt.setEnabled(true);
 
@@ -134,7 +139,12 @@ public class PhoneVerificationActivity extends AppCompatActivity  {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            FirebaseUser user = task.getResult().getUser();
+                            FirebaseUser fuser = task.getResult().getUser();
+
+                            User userData = new User();
+                            userData.setPhoneNumber(fuser.getPhoneNumber().toString());
+
+                            userRef.child(fuser.getPhoneNumber().toString()).setValue(user);
                             startActivity(new Intent(PhoneVerificationActivity.this, MapActivity.class));
                             finish();
                         } else {

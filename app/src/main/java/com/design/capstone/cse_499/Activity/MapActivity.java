@@ -15,6 +15,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.design.capstone.cse_499.Model.Online;
 import com.design.capstone.cse_499.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -77,7 +78,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 
-        userID = mAuth.getCurrentUser().getUid().toString();
+        userID = mAuth.getCurrentUser().getPhoneNumber().toString();
 
 
     }
@@ -102,8 +103,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
 
-                    userOnlineRef.child(userID).setValue(true);
+                    ///userOnlineRef.child(userID).setValue(true);
                     onlineofflineSwitch.setText("Online");
+                    Online online = new Online(userID,latitude,longitude);
+                    userOnlineRef.child(userID).setValue(online);
                 } else {
                     userOnlineRef.child(userID).removeValue();
                     onlineofflineSwitch.setText("Offline");
@@ -261,11 +264,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             longitude = location.getLongitude();
             latitude = location.getLatitude();
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 13));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude), 15));
 
 
         }
         addMarkerOnMap(latitude, longitude);
+
+
 
 
     }
