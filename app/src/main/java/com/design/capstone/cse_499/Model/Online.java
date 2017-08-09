@@ -1,7 +1,5 @@
 package com.design.capstone.cse_499.Model;
 
-import com.google.android.gms.maps.model.LatLng;
-
 /**
  * Created by Majedur Rahman on 8/6/2017.
  */
@@ -9,13 +7,20 @@ import com.google.android.gms.maps.model.LatLng;
 public class Online  {
 
     private String id ;
-    private double latitide;
+    private double latitude;
     private  double longitude;
 
-    public Online(String id, double latitide, double longitude) {
+
+    public  Online(){
+
+
+
+    }
+
+    public Online(String id, double latitude, double longitude) {
 
         this.id = id;
-        this.latitide = latitide;
+        this.latitude = latitude;
         this.longitude = longitude;
     }
 
@@ -27,12 +32,12 @@ public class Online  {
         this.id = id;
     }
 
-    public double getLatitide() {
-        return latitide;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setLatitide(double latitide) {
-        this.latitide = latitide;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
     public double getLongitude() {
