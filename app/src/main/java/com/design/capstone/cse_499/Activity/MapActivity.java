@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -64,7 +65,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     DatabaseReference userOnlineRef = database.getReference("isOnline");
     DatabaseReference userBusyRef = database.getReference("isBusy");
     ArrayList<LatLng> userPositionList;
-    ArrayList<String> onlineUserKeyList ;
+    ArrayList<String> onlineUserKeyList;
     ArrayList<Online> onlineUserList;
     private GoogleMap mMap;
     //Google ApiClient
@@ -90,7 +91,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         mAuth = FirebaseAuth.getInstance();
 
-
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -114,13 +114,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         getDataListner();
 
 
-
     }
 
 
     public void initOneSignalData() {
 
         OneSignal.sendTag("User_ID", userID);
+        OneSignal.deleteTag("Online");
 
 
     }
@@ -149,7 +149,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             }
         }, 1000);
     }
-
 
 
     public void getOnlineUser() {
@@ -191,21 +190,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     public void getOnlineUserData() {
 
+        for (int i = 0; i < onlineUserList.size(); i++) {
+            LatLng latlong = new LatLng(onlineUserList.get(i).getLatitude(), onlineUserList.get(i).getLongitude());
+            userPositionList.add(latlong);
+        }
 
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < onlineUserList.size(); i++) {
-                    LatLng latlong = new LatLng(onlineUserList.get(i).getLatitude(), onlineUserList.get(i).getLongitude());
-                    userPositionList.add(latlong);
-                }
-
-
-            }
-        });
 
     }
-
 
 
     private void getDataListner() {
@@ -215,23 +206,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
+
+
+
                 updateOnlineUserData();
 
-                if (!dataSnapshot.getKey().trim().equalsIgnoreCase(userID)){
-                    sendNotification();
+                Log.e("Child add", dataSnapshot.getKey());
+
+                  if (!dataSnapshot.getKey().trim().equalsIgnoreCase(userID)){
+                 sendNotificationToOnlineUser();
                 }
-
-
-
-
 
 
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                Log.e("Child changed", dataSnapshot.getKey());
 
-                updateOnlineUserData();
 
             }
 
@@ -239,6 +231,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onChildRemoved(DataSnapshot dataSnapshot) {
 
                 updateOnlineUserData();
+                Log.e("Child removed ", dataSnapshot.getKey());
 
             }
 
@@ -255,9 +248,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-
-
-    private void sendNotification() {
+    private void sendNotificationToOnlineUser() {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -272,7 +263,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         String jsonResponse;
 
                         URL url = new URL("https://onesignal.com/api/v1/notifications");
-                        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
                         con.setUseCaches(false);
                         con.setDoOutput(true);
                         con.setDoInput(true);
@@ -282,12 +273,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         con.setRequestMethod("POST");
 
                         String strJsonBody = "{"
-                                +   "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
-                                +   "\"included_segments\": [\"All\"],"
-                                +   "\"data\": {\"foo\": \"bar\"},"
-                                +   "\"contents\": {\"en\": \"Someone is Visible in Map\"}"
+                                + "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
+                                + "\"included_segments\": [\"All\"],"
+                                + "\"data\": {\"foo\": \"bar\"},"
+                                + "\"android_group\": \"CSE 499\","
+                                + "\"contents\": {\"en\": \"Someone Visible on Map \"}"
                                 + "}";
-
 
                         System.out.println("strJsonBody:\n" + strJsonBody);
 
@@ -300,20 +291,19 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         int httpResponse = con.getResponseCode();
                         System.out.println("httpResponse: " + httpResponse);
 
-                        if (  httpResponse >= HttpURLConnection.HTTP_OK
+                        if (httpResponse >= HttpURLConnection.HTTP_OK
                                 && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
                             Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
                             jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
                             scanner.close();
-                        }
-                        else {
+                        } else {
                             Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
                             jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
                             scanner.close();
                         }
                         System.out.println("jsonResponse:\n" + jsonResponse);
 
-                    } catch(Throwable t) {
+                    } catch (Throwable t) {
                         t.printStackTrace();
                     }
                 }
@@ -330,6 +320,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 if (isChecked == false) {
                     mAuth.signOut();
                     finish();
+
                 }
 
             }
@@ -343,11 +334,14 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     ///userOnlineRef.child(userID).setValue(true);
                     onlineofflineSwitch.setText("Online");
+                    OneSignal.sendTag("Online", String.valueOf(true).toString());
+
                     Online online = new Online(userID, latitude, longitude);
                     userOnlineRef.child(userID).setValue(online);
                 } else {
                     userOnlineRef.child(userID).removeValue();
                     onlineofflineSwitch.setText("Offline");
+                    OneSignal.deleteTag("Online");
 
                 }
             }
@@ -470,6 +464,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onDestroy();
         userOnlineRef.child(userID).removeValue();
         onlineofflineSwitch.setText("Offline");
+        OneSignal.deleteTag("Online");
 
     }
 
