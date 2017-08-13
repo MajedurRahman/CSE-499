@@ -4,13 +4,11 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -23,7 +21,6 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import com.design.capstone.cse_499.Application.MyApplication;
 import com.design.capstone.cse_499.Model.Online;
 import com.design.capstone.cse_499.R;
 import com.google.android.gms.common.ConnectionResult;
@@ -47,12 +44,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.onesignal.OneSignal;
 
-import net.bohush.geometricprogressview.GeometricProgressView;
-import net.bohush.geometricprogressview.TYPE;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -68,24 +59,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final int MAP_PERMISSION_KEY = 111;
     private static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private final String API_KEY = "AIzaSyDKk3qlFlAipHQ9Y3YGoGZSL-S67IGssN4";
-    LocationManager locationManager;
     double longitude;
     double latitude;
-    Switch signout, onlineofflineSwitch;
-    Button requestButton;
-    String userID;
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private LocationManager locationManager;
+    private Switch signout, onlineofflineSwitch;
+    private Button requestButton;
+    private String userID;
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
 
-    DatabaseReference userOnlineRef = database.getReference("isOnline");
-    DatabaseReference userBusyRef = database.getReference("isBusy");
-    ArrayList<LatLng> userPositionList;
-    ArrayList<String> onlineUserKeyList;
-    ArrayList<Online> onlineUserList;
+    private DatabaseReference userOnlineRef = database.getReference("isOnline");
+    private DatabaseReference userBusyRef = database.getReference("isBusy");
+    private DatabaseReference requestRef = database.getReference("Requests");
+    private ArrayList<LatLng> userPositionList;
+    private ArrayList<String> onlineUserKeyList;
+    private ArrayList<Online> onlineUserList;
     private GoogleMap mMap;
     //Google ApiClient
     private GoogleApiClient googleApiClient;
     private FirebaseAuth mAuth;
     private String value;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,7 +125,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void initOneSignalData() {
 
         OneSignal.sendTag("User_ID", userID);
-      //  OneSignal.deleteTag("Online");
+        //  OneSignal.deleteTag("Online");
 
 
     }
@@ -270,7 +263,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     String strJsonBody = "{"
                             + "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
                             + "\"filters\": [{\"field\": \"tag\", \"key\": \"User_ID\", \"relation\": \"=\", \"value\": \"" + userKey + "\"}],"
-                            + "\"data\": {\"tap\":\"tap\"},"
+                            + "\"data\": {\"tap\":\"tap\",\"requestId\":\"" + userID + "\"},"
                             + "\"buttons\": [{\"id\":\"accept\",\"text\":\"OPEN\",\"icon\":\"\"},{\"id\":\"cancel\",\"text\":\"CANCEL\",\"icon\":\"\"}],"
                             + "\"contents\": {\"en\": \"Tap Here To See Notification\"}"
                             + "}";
@@ -327,7 +320,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                     String strJsonBody = "{"
                             + "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
-                          //  +   "\"included_segments\": [\"All\"],"
+                            //  +   "\"included_segments\": [\"All\"],"
                             + "\"filters\": [ {\"field\": \"tag\", \"key\": \"Online\", \"relation\": \"exists\"}],"
                             + "\"data\": {\"tap\":\"tap\"},"
                             + "\"buttons\": [{\"id\":\"explore\",\"text\":\"EXPLORE NOW\",\"icon\":\"\"}],"
@@ -396,9 +389,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
 
-                            if (task.isSuccessful()){
+                            if (task.isSuccessful()) {
                                 OneSignal.sendTag("Online", value);
-                               // Toast.makeText(MapActivity.this, " Complete", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MapActivity.this, " Complete", Toast.LENGTH_SHORT).show();
+                            } else {
+
+                                Toast.makeText(MapActivity.this, "Internet Connection Problem", Toast.LENGTH_SHORT).show();
                             }
 
                         }
@@ -421,10 +417,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 sendRequestToSpecificMonitorApp(userID);
                 // sendNotificationToOnlineUser();
-              //  Toast.makeText(MapActivity.this, " Request Send ", Toast.LENGTH_SHORT).show();
+                //  Toast.makeText(MapActivity.this, " Request Send ", Toast.LENGTH_SHORT).show();
 
-
-
+                requestRef.child(userID).setValue(true);
 
                 final Dialog dialog = new Dialog(MapActivity.this);
                 dialog.setTitle("Request Notification ");
@@ -440,6 +435,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onClick(View view) {
 
                         dialog.dismiss();
+                        requestRef.child(userID).removeValue();
                     }
                 });
 
