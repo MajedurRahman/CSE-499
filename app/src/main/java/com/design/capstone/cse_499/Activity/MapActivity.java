@@ -1,8 +1,10 @@
 package com.design.capstone.cse_499.Activity;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
@@ -21,6 +23,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.design.capstone.cse_499.Application.MyApplication;
 import com.design.capstone.cse_499.Model.Online;
 import com.design.capstone.cse_499.R;
 import com.google.android.gms.common.ConnectionResult;
@@ -33,6 +36,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -41,6 +46,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.onesignal.OneSignal;
+
+import net.bohush.geometricprogressview.GeometricProgressView;
+import net.bohush.geometricprogressview.TYPE;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -74,12 +85,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     //Google ApiClient
     private GoogleApiClient googleApiClient;
     private FirebaseAuth mAuth;
+    private String value;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-
+        value = String.valueOf(true).toString();
 
         userPositionList = new ArrayList<>();
         onlineUserList = new ArrayList<>();
@@ -120,7 +132,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void initOneSignalData() {
 
         OneSignal.sendTag("User_ID", userID);
-        OneSignal.deleteTag("Online");
+      //  OneSignal.deleteTag("Online");
 
 
     }
@@ -220,7 +232,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
                 updateOnlineUserData();
                 Log.e("Child removed ", dataSnapshot.getKey());
 
@@ -296,66 +307,63 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void sendNotificationToOnlineUser() {
+
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                int SDK_INT = android.os.Build.VERSION.SDK_INT;
-                if (SDK_INT > 8) {
-                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-                            .permitAll().build();
-                    StrictMode.setThreadPolicy(policy);
+                try {
+                    String jsonResponse;
+
+                    URL url = new URL("https://onesignal.com/api/v1/notifications");
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setUseCaches(false);
+                    con.setDoOutput(true);
+                    con.setDoInput(true);
+
+                    con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    con.setRequestProperty("Authorization", "Basic ODVkNDdjZTMtMThlNy00M2VmLTkwYTItOGI3NTgyNmQ5MDlm");
+                    con.setRequestMethod("POST");
+
+                    String strJsonBody = "{"
+                            + "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
+                          //  +   "\"included_segments\": [\"All\"],"
+                            + "\"filters\": [ {\"field\": \"tag\", \"key\": \"Online\", \"relation\": \"exists\"}],"
+                            + "\"data\": {\"tap\":\"tap\"},"
+                            + "\"buttons\": [{\"id\":\"explore\",\"text\":\"EXPLORE NOW\",\"icon\":\"\"}],"
+                            + "\"contents\": {\"en\": \"Someone is visible on Map\"}"
+                            + "}";
 
 
-                    try {
-                        String jsonResponse;
+                    System.out.println("strJsonBody:\n" + strJsonBody);
 
-                        URL url = new URL("https://onesignal.com/api/v1/notifications");
-                        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                        con.setUseCaches(false);
-                        con.setDoOutput(true);
-                        con.setDoInput(true);
+                    byte[] sendBytes = strJsonBody.getBytes("UTF-8");
+                    con.setFixedLengthStreamingMode(sendBytes.length);
 
-                        con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                        con.setRequestProperty("Authorization", "Basic ODVkNDdjZTMtMThlNy00M2VmLTkwYTItOGI3NTgyNmQ5MDlm");
-                        con.setRequestMethod("POST");
+                    OutputStream outputStream = con.getOutputStream();
+                    outputStream.write(sendBytes);
 
-                        String strJsonBody = "{"
-                                + "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
-                                + "\"included_segments\": [\"All\"],"
-                                + "\"data\": {\"foo\": \"bar\"},"
-                                + "\"android_group\": \"CSE 499\","
-                                + "\"contents\": {\"en\": \"Someone Visible on Map \"}"
-                                + "}";
+                    int httpResponse = con.getResponseCode();
+                    System.out.println("httpResponse: " + httpResponse);
 
-                        System.out.println("strJsonBody:\n" + strJsonBody);
-
-                        byte[] sendBytes = strJsonBody.getBytes("UTF-8");
-                        con.setFixedLengthStreamingMode(sendBytes.length);
-
-                        OutputStream outputStream = con.getOutputStream();
-                        outputStream.write(sendBytes);
-
-                        int httpResponse = con.getResponseCode();
-                        System.out.println("httpResponse: " + httpResponse);
-
-                        if (httpResponse >= HttpURLConnection.HTTP_OK
-                                && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
-                            Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
-                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                            scanner.close();
-                        } else {
-                            Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
-                            jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
-                            scanner.close();
-                        }
-                        System.out.println("jsonResponse:\n" + jsonResponse);
-
-                    } catch (Throwable t) {
-                        t.printStackTrace();
+                    if (httpResponse >= HttpURLConnection.HTTP_OK
+                            && httpResponse < HttpURLConnection.HTTP_BAD_REQUEST) {
+                        Scanner scanner = new Scanner(con.getInputStream(), "UTF-8");
+                        jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+                        scanner.close();
+                    } else {
+                        Scanner scanner = new Scanner(con.getErrorStream(), "UTF-8");
+                        jsonResponse = scanner.useDelimiter("\\A").hasNext() ? scanner.next() : "";
+                        scanner.close();
                     }
+                    System.out.println("jsonResponse:\n" + jsonResponse);
+
+                } catch (Throwable t) {
+                    t.printStackTrace();
                 }
             }
         });
+
     }
 
     private void onClickAction() {
@@ -378,17 +386,29 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
-
+                    sendNotificationToOnlineUser();
                     ///userOnlineRef.child(userID).setValue(true);
                     onlineofflineSwitch.setText("Online");
-                    OneSignal.sendTag("Online", String.valueOf(true).toString());
+
 
                     Online online = new Online(userID, latitude, longitude);
-                    userOnlineRef.child(userID).setValue(online);
+                    userOnlineRef.child(userID).setValue(online).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                            if (task.isSuccessful()){
+                                OneSignal.sendTag("Online", value);
+                               // Toast.makeText(MapActivity.this, " Complete", Toast.LENGTH_SHORT).show();
+                            }
+
+                        }
+                    });
+
+
                 } else {
                     userOnlineRef.child(userID).removeValue();
                     onlineofflineSwitch.setText("Offline");
-                    OneSignal.deleteTag("Online");
+                    //OneSignal.deleteTag("Online");
 
                 }
             }
@@ -401,7 +421,28 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                 sendRequestToSpecificMonitorApp(userID);
                 // sendNotificationToOnlineUser();
-                Toast.makeText(MapActivity.this, " Request Send ", Toast.LENGTH_SHORT).show();
+              //  Toast.makeText(MapActivity.this, " Request Send ", Toast.LENGTH_SHORT).show();
+
+
+
+
+                final Dialog dialog = new Dialog(MapActivity.this);
+                dialog.setTitle("Request Notification ");
+                dialog.setContentView(R.layout.custom_layout_watting_dialog);
+                dialog.setTitle("Custom Dialog");
+                dialog.show();
+                dialog.setCancelable(false);
+
+
+                Button cancel = (Button) dialog.findViewById(R.id.cancel_waiting);
+                cancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        dialog.dismiss();
+                    }
+                });
+
 
             }
         });
