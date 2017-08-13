@@ -6,12 +6,19 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
+        android:name=".Application.MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <!--Add the following to your AndroidManifest.xml to prevent the launching of your main Activity
+        if you are calling startActivity above.-->
+        <meta-data
+            android:name="com.onesignal.NotificationOpened.DEFAULT"
+            android:value="DISABLE" />
+
         <activity android:name=".Activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,15 +26,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity.RegistrationActivity" />
-        <activity android:name=".Activity.ResetPasswordActivity" />
-        <activity android:name=".Activity.MapActivity" />
+        <activity android:name=".Activity.MapActivity"/>
+        <activity android:name=".Activity.PhoneVerificationActivity"/>
+        <activity android:name=".Activity.ResetPasswordActivity"/>
+        <activity android:name=".Activity.RegistrationActivity"/>
+        <activity android:name=".Activity.AnotherActivity"/>
+
+        <service
+            android:name=".Service.MyNotificationExtenderService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.onesignal.NotificationExtender" />
+            </intent-filter>
+        </service>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDKk3qlFlAipHQ9Y3YGoGZSL-S67IGssN4" />
-
-        <activity android:name=".Activity.PhoneVerificationActivity"></activity>
+            android:value="@string/google_maps_key" />
     </application>
+
 
 </manifest>
