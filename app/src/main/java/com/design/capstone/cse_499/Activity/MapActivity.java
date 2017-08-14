@@ -341,7 +341,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     String strJsonBody = "{"
                             + "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
                             + "\"filters\": [{\"field\": \"tag\", \"key\": \"User_ID\", \"relation\": \"=\", \"value\": \"" + userKey + "\"}],"
-                            + "\"data\": {\"tap\":\"tap\",\"requestId\":\"" + userKey + "\"},"
+                            + "\"data\": {\"tap\":\"tap\",\"requestId\":\"" + userID + "\"},"
                             + "\"buttons\": [{\"id\":\"accept\",\"text\":\"OPEN\",\"icon\":\"\"},{\"id\":\"cancel\",\"text\":\"CANCEL\",\"icon\":\"\"}],"
                             + "\"contents\": {\"en\": \"Tap Here To See Notification\"}"
                             + "}";
