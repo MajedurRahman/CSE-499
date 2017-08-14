@@ -61,12 +61,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private final String API_KEY = "AIzaSyDKk3qlFlAipHQ9Y3YGoGZSL-S67IGssN4";
     double longitude;
     double latitude;
+    ArrayList<String> onlineMonitorList;
     private LocationManager locationManager;
     private Switch signout, onlineofflineSwitch;
     private Button requestButton;
     private String userID;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
-
+    DatabaseReference monitorRef = database.getReference("isMonitorOnline");
     private DatabaseReference userOnlineRef = database.getReference("isOnline");
     private DatabaseReference userBusyRef = database.getReference("isBusy");
     private DatabaseReference requestRef = database.getReference("Requests");
@@ -85,7 +86,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         value = String.valueOf(true).toString();
-
+        onlineMonitorList = new ArrayList<String>();
         userPositionList = new ArrayList<>();
         onlineUserList = new ArrayList<>();
         onlineUserKeyList = new ArrayList<>();
@@ -117,8 +118,53 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         updateOnlineUserData();
 
         getDataListner();
+        updatedMonitorList();
 
 
+    }
+
+    private void updatedMonitorList() {
+
+        monitorRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+           /*     onlineMonitorList.clear();
+                getMonitorOnlineList();
+
+
+*/
+
+
+
+           onlineMonitorList.add(dataSnapshot.getKey());
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+//                onlineMonitorList.clear();
+//                getMonitorOnlineList();
+
+
+                onlineUserKeyList.remove(onlineMonitorList.indexOf(dataSnapshot.getKey()));
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
@@ -129,6 +175,38 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
 
     }
+/*
+    private void getMonitorOnlineList() {
+        if (!onlineMonitorList.isEmpty()) {
+
+            onlineMonitorList.clear();
+        }
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+
+
+                monitorRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        for (DataSnapshot data : dataSnapshot.getChildren()) {
+
+                            onlineMonitorList.add(data.getKey().toString());
+                            Log.e("Moitor", data.getKey().toString());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+
+    }*/
 
     public void updateOnlineUserData() {
 
@@ -263,7 +341,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     String strJsonBody = "{"
                             + "\"app_id\": \"9902773d-e28d-4b87-9ed2-b1683306d0bc\","
                             + "\"filters\": [{\"field\": \"tag\", \"key\": \"User_ID\", \"relation\": \"=\", \"value\": \"" + userKey + "\"}],"
-                            + "\"data\": {\"tap\":\"tap\",\"requestId\":\"" + userID + "\"},"
+                            + "\"data\": {\"tap\":\"tap\",\"requestId\":\"" + userKey + "\"},"
                             + "\"buttons\": [{\"id\":\"accept\",\"text\":\"OPEN\",\"icon\":\"\"},{\"id\":\"cancel\",\"text\":\"CANCEL\",\"icon\":\"\"}],"
                             + "\"contents\": {\"en\": \"Tap Here To See Notification\"}"
                             + "}";
@@ -415,7 +493,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onClick(View view) {
 
-                sendRequestToSpecificMonitorApp(userID);
+
+                Toast.makeText(MapActivity.this, onlineMonitorList.toString(), Toast.LENGTH_SHORT).show();
+
                 // sendNotificationToOnlineUser();
                 //  Toast.makeText(MapActivity.this, " Request Send ", Toast.LENGTH_SHORT).show();
 
@@ -428,6 +508,37 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 dialog.show();
                 dialog.setCancelable(false);
 
+                if (onlineofflineSwitch.isChecked()){
+
+                    AsyncTask.execute(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            for (int i = 0; i < onlineMonitorList.size(); i++) {
+
+
+
+                                sendRequestToSpecificMonitorApp(onlineMonitorList.get(i).toString());
+
+                                Thread.currentThread();
+                                try {
+                                    Thread.sleep(3000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                          /*  MyLauncher launcher = new MyLauncher();
+                            launcher.start();
+*/
+                                Log.e("Monitor", "After delay "+onlineMonitorList.get(i).toString());
+
+                            }
+
+                        }
+                    });
+                }
+
+
+
 
                 Button cancel = (Button) dialog.findViewById(R.id.cancel_waiting);
                 cancel.setOnClickListener(new View.OnClickListener() {
@@ -436,6 +547,45 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                         dialog.dismiss();
                         requestRef.child(userID).removeValue();
+                    }
+                });
+
+
+                requestRef.addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.getKey().equals(userID)) {
+
+                            dialog.dismiss();
+
+                            /**
+                             *  need to add notification in here
+                             */
+
+
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
                     }
                 });
 
@@ -606,5 +756,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
         Toast.makeText(this, connectionResult.toString(), Toast.LENGTH_SHORT).show();
+    }
+
+
+    private class MyLauncher extends Thread {
+        private static final String TAG = "TAG";
+        private static final int SLEEP_TIME = 5 ;
+
+        @Override
+        /**
+         * Sleep for 2 seconds as you can also change SLEEP_TIME 2 to any.
+         */
+        public void run() {
+            try {
+                // Sleeping
+                Thread.sleep(SLEEP_TIME * 1000);
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
+            //do something you want to do
+            //And your code will be executed after 2 second
+        }
     }
 }

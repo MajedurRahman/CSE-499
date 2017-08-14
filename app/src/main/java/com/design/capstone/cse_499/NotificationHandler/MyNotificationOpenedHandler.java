@@ -27,7 +27,7 @@ public class MyNotificationOpenedHandler  implements OneSignal.NotificationOpene
 
         if (actionType == OSNotificationAction.ActionType.ActionTaken) {
             Log.e("OneSignalExample", "Button pressed with id: " + result.action.actionID);
-            if (result.action.actionID.equals("accept")) {
+            /*if (result.action.actionID.equals("accept")) {
 
                 Intent intent = new Intent(MyApplication.getContext(), AnotherActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -38,7 +38,7 @@ public class MyNotificationOpenedHandler  implements OneSignal.NotificationOpene
 
                 return;
             }
-            else if (result.action.actionID.equals("explore")){
+            else*/ if (result.action.actionID.equals("explore")){
 
                 Intent intent = new Intent(MyApplication.getContext(), MapActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -50,13 +50,13 @@ public class MyNotificationOpenedHandler  implements OneSignal.NotificationOpene
 
         }
 
-      /*  if (data!=null&&data.optString("tap").equals("tap")){
+        if (data!=null&&data.optString("tap").equals("tap")){
 
             Intent intent = new Intent(MyApplication.getContext(), MapActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
             MyApplication.getContext().startActivity(intent);
 
-        }*/
+        }
 
     }
 }
