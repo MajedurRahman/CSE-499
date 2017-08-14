@@ -2,6 +2,7 @@ package com.design.capstone.cse_499.Activity;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -79,6 +81,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleApiClient googleApiClient;
     private FirebaseAuth mAuth;
     private String value;
+
+    boolean FLAG_REQUEST=false;
+    private Dialog dialog;
+    private boolean isAccepted = false;
+    private boolean cancelByButton = false;
 
 
     @Override
@@ -171,42 +178,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void initOneSignalData() {
 
         OneSignal.sendTag("User_ID", userID);
-        //  OneSignal.deleteTag("Online");
+        OneSignal.deleteTag("Online");
 
 
     }
-/*
-    private void getMonitorOnlineList() {
-        if (!onlineMonitorList.isEmpty()) {
 
-            onlineMonitorList.clear();
-        }
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-
-
-                monitorRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        for (DataSnapshot data : dataSnapshot.getChildren()) {
-
-                            onlineMonitorList.add(data.getKey().toString());
-                            Log.e("Moitor", data.getKey().toString());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-            }
-        });
-
-    }*/
 
     public void updateOnlineUserData() {
 
@@ -461,6 +437,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     ///userOnlineRef.child(userID).setValue(true);
                     onlineofflineSwitch.setText("Online");
 
+                    FLAG_REQUEST = true;
+
 
                     Online online = new Online(userID, latitude, longitude);
                     userOnlineRef.child(userID).setValue(online).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -469,7 +447,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                             if (task.isSuccessful()) {
                                 OneSignal.sendTag("Online", value);
-                                Toast.makeText(MapActivity.this, " Complete", Toast.LENGTH_SHORT).show();
+
                             } else {
 
                                 Toast.makeText(MapActivity.this, "Internet Connection Problem", Toast.LENGTH_SHORT).show();
@@ -482,7 +460,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 } else {
                     userOnlineRef.child(userID).removeValue();
                     onlineofflineSwitch.setText("Offline");
-                    //OneSignal.deleteTag("Online");
+                    OneSignal.deleteTag("Online");
+                    FLAG_REQUEST = false;
 
                 }
             }
@@ -494,21 +473,18 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             public void onClick(View view) {
 
 
-                Toast.makeText(MapActivity.this, onlineMonitorList.toString(), Toast.LENGTH_SHORT).show();
-
-                // sendNotificationToOnlineUser();
-                //  Toast.makeText(MapActivity.this, " Request Send ", Toast.LENGTH_SHORT).show();
-
-                requestRef.child(userID).setValue(true);
-
-                final Dialog dialog = new Dialog(MapActivity.this);
+                dialog = new Dialog(MapActivity.this);
                 dialog.setTitle("Request Notification ");
                 dialog.setContentView(R.layout.custom_layout_watting_dialog);
                 dialog.setTitle("Custom Dialog");
-                dialog.show();
-                dialog.setCancelable(false);
 
-                if (onlineofflineSwitch.isChecked()){
+                if (onlineofflineSwitch.isChecked() && FLAG_REQUEST){
+
+                    requestRef.child(userID).setValue(true);
+
+
+                    dialog.show();
+                    dialog.setCancelable(false);
 
                     AsyncTask.execute(new Runnable() {
                         @Override
@@ -522,19 +498,26 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                 Thread.currentThread();
                                 try {
-                                    Thread.sleep(3000);
+                                    Thread.sleep(10000);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
-                          /*  MyLauncher launcher = new MyLauncher();
-                            launcher.start();
-*/
+
+                                if (isAccepted){
+
+                                    return;
+                                }
+
                                 Log.e("Monitor", "After delay "+onlineMonitorList.get(i).toString());
 
                             }
 
                         }
                     });
+                }
+                else {
+
+                    Toast.makeText(MapActivity.this, "Need to go online first", Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -546,7 +529,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onClick(View view) {
 
                         dialog.dismiss();
+                        cancelByButton = true;
                         requestRef.child(userID).removeValue();
+
+
                     }
                 });
 
@@ -567,12 +553,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                         if (dataSnapshot.getKey().equals(userID)) {
 
                             dialog.dismiss();
+                            NotificationCompat.Builder builder =
+                                    new NotificationCompat.Builder(MapActivity.this)
+                                            .setSmallIcon(R.mipmap.ic_launcher)
+                                            .setContentTitle("CSE 499 Connection Notification")
+                                            .setContentText("Connection Established ")
+                                            .setAutoCancel(true);
+                            if (!cancelByButton){
+                                NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                manager.notify(0, builder.build());
+                            }
+                            // Add as notification
 
-                            /**
-                             *  need to add notification in here
-                             */
 
 
+                            isAccepted = true;
 
                         }
 
@@ -632,7 +627,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void addMarkerOnMap(double latitude, double longitude) {
         MarkerOptions markerOption = new MarkerOptions()
                 .position(new LatLng(latitude, longitude))//setting position
-                .title("My Position")
                 .icon(BitmapDescriptorFactory.fromResource(R.mipmap.marker4));
 
         mMap.addMarker(markerOption);
@@ -759,23 +753,4 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
 
-    private class MyLauncher extends Thread {
-        private static final String TAG = "TAG";
-        private static final int SLEEP_TIME = 5 ;
-
-        @Override
-        /**
-         * Sleep for 2 seconds as you can also change SLEEP_TIME 2 to any.
-         */
-        public void run() {
-            try {
-                // Sleeping
-                Thread.sleep(SLEEP_TIME * 1000);
-            } catch (Exception e) {
-                Log.e(TAG, e.getMessage());
-            }
-            //do something you want to do
-            //And your code will be executed after 2 second
-        }
-    }
 }
