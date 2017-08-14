@@ -64,6 +64,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     double longitude;
     double latitude;
     ArrayList<String> onlineMonitorList;
+    boolean FLAG_REQUEST = false;
     private LocationManager locationManager;
     private Switch signout, onlineofflineSwitch;
     private Button requestButton;
@@ -81,8 +82,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private GoogleApiClient googleApiClient;
     private FirebaseAuth mAuth;
     private String value;
-
-    boolean FLAG_REQUEST=false;
     private Dialog dialog;
     private boolean isAccepted = false;
     private boolean cancelByButton = false;
@@ -143,8 +142,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 */
 
 
-
-           onlineMonitorList.add(dataSnapshot.getKey());
+                onlineMonitorList.add(dataSnapshot.getKey());
             }
 
             @Override
@@ -478,49 +476,40 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 dialog.setContentView(R.layout.custom_layout_watting_dialog);
                 dialog.setTitle("Custom Dialog");
 
-                if (onlineofflineSwitch.isChecked() && FLAG_REQUEST){
 
-                    requestRef.child(userID).setValue(true);
-
-
-                    dialog.show();
-                    dialog.setCancelable(false);
-
-                    AsyncTask.execute(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            for (int i = 0; i < onlineMonitorList.size(); i++) {
+                requestRef.child(userID).setValue(true);
 
 
+                dialog.show();
+                dialog.setCancelable(false);
 
-                                sendRequestToSpecificMonitorApp(onlineMonitorList.get(i).toString());
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
 
-                                Thread.currentThread();
-                                try {
-                                    Thread.sleep(10000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
+                        for (int i = 0; i < onlineMonitorList.size(); i++) {
 
-                                if (isAccepted){
 
-                                    return;
-                                }
+                            sendRequestToSpecificMonitorApp(onlineMonitorList.get(i).toString());
 
-                                Log.e("Monitor", "After delay "+onlineMonitorList.get(i).toString());
-
+                            Thread.currentThread();
+                            try {
+                                Thread.sleep(10000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
 
+                            if (isAccepted) {
+
+                                return;
+                            }
+
+                            Log.e("Monitor", "After delay " + onlineMonitorList.get(i).toString());
+
                         }
-                    });
-                }
-                else {
 
-                    Toast.makeText(MapActivity.this, "Need to go online first", Toast.LENGTH_SHORT).show();
-                }
-
-
+                    }
+                });
 
 
                 Button cancel = (Button) dialog.findViewById(R.id.cancel_waiting);
@@ -559,12 +548,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                             .setContentTitle("CSE 499 Connection Notification")
                                             .setContentText("Connection Established ")
                                             .setAutoCancel(true);
-                            if (!cancelByButton){
+                            if (!cancelByButton) {
                                 NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                                 manager.notify(0, builder.build());
                             }
                             // Add as notification
-
 
 
                             isAccepted = true;
@@ -742,6 +730,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         }
         addMarkerOnMap(latitude, longitude);
+        Online online = new Online(userID, latitude, longitude);
+        userOnlineRef.child(userID).setValue(online);
 
 
     }
